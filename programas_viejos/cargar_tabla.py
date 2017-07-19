@@ -3,6 +3,7 @@ import asciitable
 
 def cargar_datos(tabla):
     data = asciitable.read(tabla)
-    jdA=data['col1']
-    magA=data['col2']
-    errA=data['col3']
+    jda = data['col1']
+    maga = data['col2']
+    erra = data['col3']
+    return jda, maga, erra
