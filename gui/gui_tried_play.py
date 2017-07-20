@@ -62,7 +62,7 @@ class GuiExample(object):
         self.freqs = None
 
     def __call__(self, *args, **kwargs):
-        self.tabla = "/home/marcelo/Observaciones/eclipsantes/tablas/V1216Sco-165458-4356.5.asas.pdm0"
+        self.tabla = "V1216Sco-165458-4356.5.asas.pdm0"
         self.jda, self.maga, self.erra = cargar_datos(self.tabla)
         self.fig, (self.ax1, self.ax2) = plt.subplots(nrows=2)
         manager = plt.get_current_fig_manager()
