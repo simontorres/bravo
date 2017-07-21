@@ -1,10 +1,13 @@
 import matplotlib
 matplotlib.use('QT4Agg')
+from matplotlib.widgets import Button
 import matplotlib.pyplot as plt
 import numpy as np
-import asciitable
-from astroML.time_series import lomb_scargle
-from gatspy import datasets, periodic
+from scipy.interpolate import UnivariateSpline
+from matplotlib.widgets import MultiCursor
+import asciitable # hay que instalar
+from astroML.time_series import lomb_scargle #hay que instalar
+from gatspy import datasets, periodic #hay que instalar
 
 def cargar_datos(tabla):
     data = asciitable.read(tabla)
@@ -37,6 +40,10 @@ def calculo_fase(mag, date, er, per, T0):
 
     return re2, mag3, t2, err2
 
+def spline(jda,maga,orden,splineYes=True):
+    spl = UnivariateSpline(jda, maga, k=orden)
+    return spl,splineYes
+
 class GuiExample(object):
 
     def __init__(self):
@@ -44,6 +51,7 @@ class GuiExample(object):
         self.fig = None
         self.ax1 = None
         self.ax2 = None
+        self.ax3 = None
         self.ax1_bb = None
         self.line_plot = None
         self.jda = None
@@ -60,18 +68,51 @@ class GuiExample(object):
         self.model = None
         self.power = None
         self.freqs = None
+        self.spl = None
+        self.splineYes = True
+        self.multi = None
+
 
     def __call__(self, *args, **kwargs):
         self.tabla = "V1216Sco-165458-4356.5.asas.pdm0"
         self.jda, self.maga, self.erra = cargar_datos(self.tabla)
-        self.fig, (self.ax1, self.ax2) = plt.subplots(nrows=2)
+        self.fig, (self.ax1, self.ax2 , self.ax3) = plt.subplots(nrows=3)
+        self.multi = MultiCursor(self.fig.canvas, (self.ax1,self.ax2), color='r', \
+                                 lw=.5, horizOn=None, vertOn=True)
+
         manager = plt.get_current_fig_manager()
         manager.window.showMaximized()
+
+        #jd/mag
+        if self.splineYes == True:
+            self.spl, self.splineYes = spline(self.jda, self.maga, 5)
+            print "Aplicando spline"
+            self.maga = self.maga - self.spl(self.jda)
+            #self.ax1.plot(self.jda, self.spl(self.jda), 'r--', lw=3)
+            self.spl, self.splineYes = spline(self.jda, self.maga, 5)
+            self.ax1.plot(self.jda, self.spl(self.jda), 'r--', lw=3)
+            self.maga = self.maga - self.spl(self.jda)
+        else:
+            print "NO aplicando spline"
+            self.spl,self.splineYes = spline(self.jda, self.maga,5)
+            self.ax1.plot(self.jda, self.spl(self.jda), 'g--', lw=3)
+
+
+
+        self.ax1.plot(self.jda, self.maga, 'o', c='black')
+        self.ax1.set_ylim(max(self.maga+0.01), min(self.maga)-0.01)
+        self.ax1.set_xlim(min(self.jda)-10, max(self.jda)+0.01)
+
+
+
+
+
+
         #GLS
         self.periodos=np.linspace(self.min_per, self.max_per, self.step_per)
         self.omega = 2 * np.pi / self.periodos
         self.PS = lomb_scargle(self.jda, self.maga, self.erra, self.omega, generalized=True)
-        self.ax1.plot(self.periodos, self.PS, '-', c='black', lw=1, zorder=1)
+        self.ax2.plot(self.periodos, self.PS, '-', c='black', lw=1, zorder=1)
 
         #LS
         model = periodic.LombScargle().fit(self.jda, self.maga, self.erra)
@@ -80,28 +121,27 @@ class GuiExample(object):
         df = (fmax - fmin) / self.step_per
         self.power = model.score_frequency_grid(fmin, df, self.step_per)
         self.freqs = fmin + df * np.arange(self.step_per)
-        self.ax1.plot(1.0/self.freqs, self.power, '-', c='red', lw=1, zorder=1)
+        self.ax2.plot(1.0/self.freqs, self.power, '-', c='red', lw=1, zorder=1)
 
         #PDM
 
 
-        self.ax1_bb = self.ax1.get_position()
+        self.ax1_bb = self.ax2.get_position()
 
         self.fig.canvas.mpl_connect('motion_notify_event', self.on_mouse_over)
         plt.tight_layout()
         plt.show()
+
 
     def on_mouse_over(self, event):
         ax1_x, ax1_y = \
             self.fig.transFigure.inverted().transform((event.x, event.y))
 
         if self.ax1_bb.contains(ax1_x, ax1_y):
-            #print('Se movio')
-            # A, B = event.xdata, event.ydata
             if self.line_plot is not None:
                 try:
                     self.line_plot.remove()
-                    self.ax2.relim()
+                    self.ax3.relim()
                 except:
                     pass
             if event.ydata is not None:
@@ -109,10 +149,11 @@ class GuiExample(object):
                 print event.xdata
                 self.t0=0
                 fasA,magniA,t_A,er_A=calculo_fase(self.maga, self.jda, self.erra, self.per, self.t0)
-                self.line_plot, = self.ax2.plot(fasA,magniA,"o",color='k')
-                self.ax2.set_xlim(0,2)
-                self.ax2.set_ylim(max(magniA+0.01), min(magniA)-0.01)
+                self.line_plot, = self.ax3.plot(fasA,magniA,"o",color='k')
+                self.ax3.set_xlim(0,2)
+                self.ax3.set_ylim(max(magniA+0.01), min(magniA)-0.01)
                 self.fig.canvas.draw()
+
 
 
 if __name__ == '__main__':
