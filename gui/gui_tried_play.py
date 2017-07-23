@@ -8,6 +8,9 @@ from matplotlib.widgets import MultiCursor
 import asciitable # hay que instalar
 from astroML.time_series import lomb_scargle #hay que instalar
 from gatspy import datasets, periodic #hay que instalar
+from astroML.plotting import setup_text_plots
+setup_text_plots(fontsize=8, usetex=True)
+
 
 def cargar_datos(tabla):
     data = asciitable.read(tabla)
@@ -71,6 +74,7 @@ class GuiExample(object):
         self.spl = None
         self.splineYes = True
         self.multi = None
+        self.name_star = "V1216 Sco"
 
 
     def __call__(self, *args, **kwargs):
@@ -105,6 +109,9 @@ class GuiExample(object):
         self.ax1.set_xlim(min(self.jda)-10, max(self.jda)+0.01)
         self.ax1.set_xlabel(r'Time', fontsize=20)
         self.ax1.set_ylabel(r"Magnitud", fontsize=20)
+        if self.name_star!=True:
+            self.ax1.text(0.03, 0.135, "%s"%self.name_star, ha='left', va='top', \
+                          transform=self.ax1.transAxes, fontsize=25,color="red")
 
 
 
@@ -134,6 +141,9 @@ class GuiExample(object):
 
         self.ax2.set_xlabel(r'Periodo', fontsize=20)
         self.ax2.set_ylabel(r"Power", fontsize=20)
+
+        #self.ax2.set_ylim(0,1.01)
+        #self.ax2.set_xlim(self.min_per-0.5, self.max_per+0.5)
 
         self.ax1_bb = self.ax2.get_position()
 
