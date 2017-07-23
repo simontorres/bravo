@@ -77,6 +77,7 @@ class GuiExample(object):
         self.tabla = "V1216Sco-165458-4356.5.asas.pdm0"
         self.jda, self.maga, self.erra = cargar_datos(self.tabla)
         self.fig, (self.ax1, self.ax2 , self.ax3) = plt.subplots(nrows=3)
+        #self.fig.subplots_adjust(hspace=0.09, bottom=0.06, top=0.94, left=0.12, right=0.94)
         self.multi = MultiCursor(self.fig.canvas, (self.ax1,self.ax2), color='r', \
                                  lw=.5, horizOn=None, vertOn=True)
 
@@ -102,6 +103,8 @@ class GuiExample(object):
         self.ax1.plot(self.jda, self.maga, 'o', c='black')
         self.ax1.set_ylim(max(self.maga+0.01), min(self.maga)-0.01)
         self.ax1.set_xlim(min(self.jda)-10, max(self.jda)+0.01)
+        self.ax1.set_xlabel(r'Time', fontsize=20)
+        self.ax1.set_ylabel(r"Magnitud", fontsize=20)
 
 
 
@@ -112,7 +115,7 @@ class GuiExample(object):
         self.periodos=np.linspace(self.min_per, self.max_per, self.step_per)
         self.omega = 2 * np.pi / self.periodos
         self.PS = lomb_scargle(self.jda, self.maga, self.erra, self.omega, generalized=True)
-        self.ax2.plot(self.periodos, self.PS, '-', c='black', lw=1, zorder=1)
+        self.ax2.plot(self.periodos, self.PS, '-', c='black', lw=1, zorder=1,label="GLS")
 
         #LS
         model = periodic.LombScargle().fit(self.jda, self.maga, self.erra)
@@ -121,10 +124,16 @@ class GuiExample(object):
         df = (fmax - fmin) / self.step_per
         self.power = model.score_frequency_grid(fmin, df, self.step_per)
         self.freqs = fmin + df * np.arange(self.step_per)
-        self.ax2.plot(1.0/self.freqs, self.power, '-', c='red', lw=1, zorder=1)
+        self.ax2.plot(1.0/self.freqs, self.power, '-', c='red', lw=1, zorder=1,label="LS")
+        self.ax2.legend(fontsize = 'x-large')
 
         #PDM
 
+
+
+
+        self.ax2.set_xlabel(r'Periodo', fontsize=20)
+        self.ax2.set_ylabel(r"Power", fontsize=20)
 
         self.ax1_bb = self.ax2.get_position()
 
@@ -153,6 +162,8 @@ class GuiExample(object):
                 self.ax3.set_xlim(0,2)
                 self.ax3.set_ylim(max(magniA+0.01), min(magniA)-0.01)
                 self.fig.canvas.draw()
+                self.ax3.set_xlabel(r'Fase', fontsize=20)
+                self.ax3.set_ylabel(r"Magnitud", fontsize=20)
 
 
 
