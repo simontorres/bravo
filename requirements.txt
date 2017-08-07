@@ -4,4 +4,5 @@ matplotlib==1.5.3
 numpy==1.11.1
 asciitable==0.8.0
 astroML==0.3
+astroML_addons
 gatspy==0.3

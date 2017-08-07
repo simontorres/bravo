@@ -1,3 +1,4 @@
+import sys
 import matplotlib
 matplotlib.use('QT4Agg')
 from matplotlib.widgets import Button
@@ -10,6 +11,20 @@ from astroML.time_series import lomb_scargle #hay que instalar
 from gatspy import datasets, periodic #hay que instalar
 #from astroML.plotting import setup_text_plots
 #setup_text_plots(fontsize=8, usetex=True)
+
+import argparse
+
+
+def get_args(arguments=None):
+    parser = argparse.ArgumentParser(
+        description="Interactive tool to search for variable objects")
+
+    parser.add_argument('table',
+                        action='store',
+                        help="Table of photometry or radial velocity data.")
+    args = parser.parse_args(args=arguments)
+
+    return args
 
 
 def cargar_datos(tabla):
@@ -76,9 +91,8 @@ class GuiExample(object):
         self.multi = None
         self.name_star = "V1216 Sco"
 
-
-    def __call__(self, *args, **kwargs):
-        self.tabla = "V1216Sco-165458-4356.5.asas.pdm0"
+    def __call__(self, tabla, *args, **kwargs):
+        self.tabla = tabla
         self.jda, self.maga, self.erra = cargar_datos(self.tabla)
         self.fig, (self.ax1, self.ax2 , self.ax3) = plt.subplots(nrows=3)
         #self.fig.subplots_adjust(hspace=0.09, bottom=0.06, top=0.94, left=0.12, right=0.94)
@@ -178,5 +192,8 @@ class GuiExample(object):
 
 
 if __name__ == '__main__':
+
+    args =  get_args()
+    # print(args.table)
     gui = GuiExample()
-    gui()
+    gui(tabla=args.table)
