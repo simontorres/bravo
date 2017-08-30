@@ -25,7 +25,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="gui_con_pdm_play.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="gui_con_pdm_play.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gui/gui_con_pdm_play.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-2571">
@@ -33,6 +33,16 @@
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pdm.cpp" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/gui/pdm.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -392,7 +402,14 @@
       <option name="project" value="LOCAL" />
       <updated>1504129707523</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="pdm scipt">
+      <created>1504129825748</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1504129825748</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -458,7 +475,8 @@
     <MESSAGE value="added matplotlib gui example" />
     <MESSAGE value="updated requirements.txt" />
     <MESSAGE value="new gui" />
-    <option name="LAST_COMMIT_MESSAGE" value="new gui" />
+    <MESSAGE value="pdm scipt" />
+    <option name="LAST_COMMIT_MESSAGE" value="pdm scipt" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -467,14 +485,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/gui/gui_tried_play.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gui/gui_tried_play.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -848,6 +858,14 @@
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gui/pdm.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
