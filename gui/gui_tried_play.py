@@ -14,6 +14,11 @@ from gatspy import datasets, periodic #hay que instalar
 
 import argparse
 
+"""
+Ideas: Eliminar puntos y recalcular, mejorar el paso de la grilla del cursor,agregar PDM, 
+dar opciones de descarga y grafico en fase con buen formato, 
+"""
+
 
 def get_args(arguments=None):
     parser = argparse.ArgumentParser(
