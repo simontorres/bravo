@@ -79,9 +79,9 @@ class GuiExample(object):
         self.erra = None
         self.per = None
         self.t0 = None
-        self.min_per = 0.1
-        self.max_per = 100.0
-        self.step_per = 50000.0
+        self.min_per = 2.2
+        self.max_per = 50.1
+        self.step_per = 5000.0
         self.periodos = None
         self.omega = None
         self.PS = None
@@ -160,8 +160,8 @@ class GuiExample(object):
 	#f1=np.log10(1.0/self.max_per)
 	f0=self.min_per
 	f1=self.max_per
-	step_pdm=100000
-	pdm1=float(os.popen("./pdm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,step_pdm)).readlines()[0])
+	pdm1=float(os.popen("./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,self.step_per)).readlines()[0])
+	print "./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,self.step_per)
 	f_11=asciidata.open(self.tabla+".pdm")
 	Pdm1t,Ppdm1=np.array([]),np.array([])
 	print len(f_11[0]),1/min(f_11[1])

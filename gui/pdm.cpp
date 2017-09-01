@@ -17,7 +17,7 @@ int nlin;
 float pdm(double time[], double signal[], float f0, float fn, float df, int Nbin, int Ncover, float D, int rr,ofstream &dumFile){
 
  int k,j,l,m,f,ind,ntot;
- float frq;
+ float frq,t;
  float phase,cuam,promag,theta,freqfin,ttot=9999;
  float quad[Nbin*Ncover];
  float prom[Nbin*Ncover];
@@ -29,7 +29,9 @@ float pdm(double time[], double signal[], float f0, float fn, float df, int Nbin
  for(k = 0; k < rr; k++)
     {
 //      frq=pow(10,f0+(fn-f0)/float(rr)*k);
-      frq=1/(f0+(fn-f0)/float(rr)*k);
+//      frq=1/(f0+(fn-f0)/float(rr)*k);
+	t=f0+(fn-f0)/float(rr)*k;
+	frq=1/t;
 //      frq=(f0+(fn-f0)/float(rr)*k);
       cuam=0;
       promag=0;
