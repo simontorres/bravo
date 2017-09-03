@@ -7,14 +7,16 @@ import numpy as np
 from scipy.interpolate import UnivariateSpline
 from matplotlib.widgets import MultiCursor
 import asciitable # hay que instalar
-from astroML.time_series import lomb_scargle #hay que instalar
-from gatspy import datasets, periodic #hay que instalar
+#from astroML.time_series import lomb_scargle #hay que instalar
+#from gatspy import datasets, periodic #hay que instalar
 #from astroML.plotting import setup_text_plots
 #setup_text_plots(fontsize=8, usetex=True)
 import os
 import asciidata
 
 import argparse
+from astropy.stats import LombScargle
+
 
 
 def get_args(arguments=None):
@@ -79,9 +81,9 @@ class GuiExample(object):
         self.erra = None
         self.per = None
         self.t0 = None
-        self.min_per = 2.2
-        self.max_per = 50.1
-        self.step_per = 5000.0
+        self.min_per = 0.1
+        self.max_per = 10.0
+        self.step_per = 80000.0
         self.periodos = None
         self.omega = None
         self.PS = None
@@ -92,6 +94,7 @@ class GuiExample(object):
         self.splineYes = None
         self.multi = None
         self.name_star = "V1216 Sco"
+        self.auto_per=None
 
     def __call__(self, tabla, *args, **kwargs):
         self.tabla = tabla
@@ -125,6 +128,7 @@ class GuiExample(object):
         self.ax1.set_xlim(min(self.jda)-10, max(self.jda)+0.01)
         self.ax1.set_xlabel(r'Time', fontsize=20)
         self.ax1.set_ylabel(r"Magnitud", fontsize=20)
+
         if self.name_star!=True:
             self.ax1.text(0.03, 0.145, "%s"%self.name_star, ha='left', va='top', \
                           transform=self.ax1.transAxes, fontsize=25,color="red")
@@ -133,7 +137,15 @@ class GuiExample(object):
 
 
 
+        #LS astropy
+        frequency2, power3 = LombScargle(self.jda, self.maga, self.erra).autopower\
+            (minimum_frequency=1 / self.max_per,maximum_frequency=1 / self.min_per)
+        self.ax2.plot(1.0 / frequency2, power3, '-', c='cyan', lw=1, zorder=1, \
+                      label="PyLS")
 
+        if self.auto_per == True:
+            self.step_per = len(frequency2)
+        """
         #GLS
         self.periodos=np.linspace(self.min_per, self.max_per, self.step_per)
         self.omega = 2 * np.pi / self.periodos
@@ -149,26 +161,28 @@ class GuiExample(object):
         self.freqs = fmin + df * np.arange(self.step_per)
         self.ax2.plot(1.0/self.freqs, self.power, '-', c='red', lw=1, zorder=1,label="LS")
         self.ax2.legend(fontsize = 'x-large')
+        """
+
 
         #PDM
-     
-	os.system("awk '{print $1,$2,$3,$1,$2}' %s > borrar.dat"%tabla)
-	self.tabla="borrar.dat"
-	f_1=asciidata.open(self.tabla)
-	longi=len(f_1[0])-1
-	#f0=np.log10(1.0/self.min_per)
-	#f1=np.log10(1.0/self.max_per)
-	f0=self.min_per
-	f1=self.max_per
-	pdm1=float(os.popen("./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,self.step_per)).readlines()[0])
-	print "./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,self.step_per)
-	f_11=asciidata.open(self.tabla+".pdm")
-	Pdm1t,Ppdm1=np.array([]),np.array([])
-	print len(f_11[0]),1/min(f_11[1])
-	for i in range(len(f_11[0])):
-	  Pdm1t=np.append(Pdm1t,float(f_11[0][i]))
-	  Ppdm1=np.append(Ppdm1,1.0/float(f_11[1][i]))
-	self.ax2.plot(Ppdm1, Pdm1t, '-', c='green', lw=1, zorder=1,label="PDM")
+
+        os.system("awk '{print $1,$2,$3,$1,$2}' %s > borrar.dat"%tabla)
+        self.tabla="borrar.dat"
+        f_1=asciidata.open(self.tabla)
+        longi=len(f_1[0])-1
+        #f0=np.log10(1.0/self.min_per)
+        #f1=np.log10(1.0/self.max_per)
+        f0=self.min_per
+        f1=self.max_per
+        pdm1=float(os.popen("./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,self.step_per)).readlines()[0])
+        print "./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,self.step_per)
+        f_11=asciidata.open(self.tabla+".pdm")
+        Pdm1t,Ppdm1=np.array([]),np.array([])
+        print len(f_11[0]),1/min(f_11[1])
+        for i in range(len(f_11[0])):
+            Pdm1t=np.append(Pdm1t,float(f_11[0][i]))
+            Ppdm1=np.append(Ppdm1,1.0/float(f_11[1][i]))
+        self.ax2.plot(Ppdm1, Pdm1t, '-', c='green', lw=1, zorder=1,label="PDM")
         self.ax2.legend(fontsize = 'x-large')
 
 
