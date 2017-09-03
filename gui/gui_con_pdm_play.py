@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 from matplotlib.widgets import MultiCursor
-import asciitable # hay que instalar
+#import asciitable # hay que instalar
 #from astroML.time_series import lomb_scargle #hay que instalar
 #from gatspy import datasets, periodic #hay que instalar
 #from astroML.plotting import setup_text_plots
 #setup_text_plots(fontsize=8, usetex=True)
 import os
-import asciidata
+
 
 import argparse
 from astropy.stats import LombScargle
@@ -32,10 +32,10 @@ def get_args(arguments=None):
 
 
 def cargar_datos(tabla):
-    data = asciitable.read(tabla)
-    jda = data['col1']
-    maga = data['col2']
-    erra = data['col3']
+    data = np.genfromtxt(tabla)
+    jda = data[:,0]
+    maga = data[:,1]
+    erra = data[:,2]
     return jda, maga, erra
 
 def calculo_fase(mag, date, er, per, T0):
@@ -83,7 +83,8 @@ class GuiExample(object):
         self.t0 = None
         self.min_per = 0.1
         self.max_per = 10.0
-        self.step_per = 80000.0
+  #      self.step_per = 80000.0
+	self.step_pdm = 50000.0
         self.periodos = None
         self.omega = None
         self.PS = None
@@ -136,7 +137,7 @@ class GuiExample(object):
 
 
 
-
+	
         #LS astropy
         frequency2, power3 = LombScargle(self.jda, self.maga, self.erra).autopower\
             (minimum_frequency=1 / self.max_per,maximum_frequency=1 / self.min_per)
@@ -168,35 +169,27 @@ class GuiExample(object):
 
         os.system("awk '{print $1,$2,$3,$1,$2}' %s > borrar.dat"%tabla)
         self.tabla="borrar.dat"
-        f_1=asciidata.open(self.tabla)
-        longi=len(f_1[0])-1
-        #f0=np.log10(1.0/self.min_per)
-        #f1=np.log10(1.0/self.max_per)
-        f0=self.min_per
-        f1=self.max_per
-        pdm1=float(os.popen("./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,self.step_per)).readlines()[0])
-        print "./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,f0,f1,self.step_per)
-        f_11=asciidata.open(self.tabla+".pdm")
-        Pdm1t,Ppdm1=np.array([]),np.array([])
-        print len(f_11[0]),1/min(f_11[1])
-        for i in range(len(f_11[0])):
-            Pdm1t=np.append(Pdm1t,float(f_11[0][i]))
-            Ppdm1=np.append(Ppdm1,1.0/float(f_11[1][i]))
-        self.ax2.plot(Ppdm1, Pdm1t, '-', c='green', lw=1, zorder=1,label="PDM")
+	longi=open(self.tabla, 'r').read().count("\n")
+        pdm1=float(os.popen("./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,self.min_per,self.max_per,self.step_pdm)).readlines()[0])
+	f_11=np.genfromtxt(self.tabla+".pdm")
+        Pdm1t,Ppdm1=f_11[:,0],1./f_11[:,1]
+        print len(f_11[0]),1./min(f_11[1])
+
+        self.ax2.plot(Ppdm1, Pdm1t, '-', c='green', lw=1, zorder=1,label="PDM",alpha=0.8)
         self.ax2.legend(fontsize = 'x-large')
 
 
         self.ax2.set_xlabel(r'Periodo', fontsize=20)
         self.ax2.set_ylabel(r"Power", fontsize=20)
 
-        #self.ax2.set_ylim(0,1.01)
+
         self.ax2.set_xlim(self.min_per, self.max_per)
 
         self.ax1_bb = self.ax2.get_position()
 
         self.fig.canvas.mpl_connect('motion_notify_event', self.on_mouse_over)
         plt.tight_layout()
-        plt.show()
+#        plt.show()
 
 
     def on_mouse_over(self, event):
