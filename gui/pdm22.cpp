@@ -80,7 +80,7 @@ int main (int argc, char* argv[]) {
 	FILE * datos;
         long taman;
         int i,n,m,nit;
-        double b,u;
+        double b;
         datos = fopen (argv[1],"r");
         if (datos==NULL) {fputs ("File error",stderr); exit (1);}
         nlin= atoi(argv[2]);
@@ -92,8 +92,6 @@ int main (int argc, char* argv[]) {
               fscanf(datos,"%lE", &jd[n] );
               fscanf(datos,"%lE",&mag[n]);
 	      fscanf(datos,"%lE",&mager[n]);
-	      fscanf(datos,"%lE",&u);
-	      fscanf(datos,"%lE",&u);
             }
 //	cout << pdm(jd,mag,-1,0,0.0001,10,5,0,4000,dumFile) << "\n";
 	cout << setprecision(10) << pdm(jd,mag,atof(argv[3]),atof(argv[4]),0.0001,atof(argv[5]),atof(argv[6]),0,atof(argv[7]),dumFile) << "\n";
