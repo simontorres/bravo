@@ -1,4 +1,4 @@
-import sys
+#import sys
 import matplotlib
 matplotlib.use('QT4Agg')
 from matplotlib.widgets import Button
@@ -6,18 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 from matplotlib.widgets import MultiCursor
-import asciitable # hay que instalar
-from astroML.time_series import lomb_scargle #hay que instalar
-from gatspy import datasets, periodic #hay que instalar
-#from astroML.plotting import setup_text_plots
-#setup_text_plots(fontsize=8, usetex=True)
+import os
+
 
 import argparse
+from astropy.stats import LombScargle
 
-"""
-Ideas: Eliminar puntos y recalcular, mejorar el paso de la grilla del cursor,agregar PDM, 
-dar opciones de descarga y grafico en fase con buen formato, 
-"""
 
 
 def get_args(arguments=None):
@@ -33,12 +27,13 @@ def get_args(arguments=None):
 
 
 def cargar_datos(tabla):
-    data = asciitable.read(tabla)
-    jda = data['col1']
-    maga = data['col2']
-    erra = data['col3']
+    data = np.genfromtxt(tabla)
+    data=data[data[:,0].argsort()]
+    jda = data[:,0]
+    maga = data[:,1]
+    erra = data[:,2]
     return jda, maga, erra
-
+"""
 def calculo_fase(mag, date, er, per, T0):
     fase2, tt2, err, t = [], [], [], []
     for i in range(len(mag)):
@@ -62,6 +57,20 @@ def calculo_fase(mag, date, er, per, T0):
     err2 = np.concatenate((err, err), axis=0)
 
     return re2, mag3, t2, err2
+"""
+
+def calculo_fase(mag, date, er, per, T0):
+    fase2 = np.modf(date/per)[0]
+    tt2   = fase2+1
+    re2 = np.concatenate((fase2, tt2), axis=0)
+    mag3 = np.concatenate((mag, mag), axis=0)
+    t2 = np.concatenate((date, date), axis=0)
+    err2 = np.concatenate((er, er), axis=0)
+
+    return re2, mag3, t2, err2
+
+
+
 
 def spline(jda,maga,orden,splineYes=True):
     spl = UnivariateSpline(jda, maga, k=orden)
@@ -84,7 +93,8 @@ class GuiExample(object):
         self.t0 = None
         self.min_per = 0.1
         self.max_per = 10.0
-        self.step_per = 10000.0
+  #      self.step_per = 80000.0
+	self.step_pdm = 5000.0
         self.periodos = None
         self.omega = None
         self.PS = None
@@ -92,15 +102,16 @@ class GuiExample(object):
         self.power = None
         self.freqs = None
         self.spl = None
-        self.splineYes = True
+        self.splineYes = None
         self.multi = None
-        self.name_star = "V1216 Sco"
+        self.name_star = True
+        self.auto_per=None
 
     def __call__(self, tabla, *args, **kwargs):
         self.tabla = tabla
         self.jda, self.maga, self.erra = cargar_datos(self.tabla)
         self.fig, (self.ax1, self.ax2 , self.ax3) = plt.subplots(nrows=3)
-        #self.fig.subplots_adjust(hspace=0.09, bottom=0.06, top=0.94, left=0.12, right=0.94)
+        self.fig.subplots_adjust(hspace=0.27, bottom=0.07, top=0.99, left=0.08, right=0.98)
         self.multi = MultiCursor(self.fig.canvas, (self.ax1,self.ax2), color='r', \
                                  lw=.5, horizOn=None, vertOn=True)
 
@@ -119,24 +130,33 @@ class GuiExample(object):
         else:
             print "NO aplicando spline"
             self.spl,self.splineYes = spline(self.jda, self.maga,5)
-            self.ax1.plot(self.jda, self.spl(self.jda), 'g--', lw=3)
+            self.ax1.plot(self.jda, self.spl(self.jda), 'r--', lw=3)
 
 
 
-        self.ax1.plot(self.jda, self.maga, 'o', c='black')
+        self.ax1.plot(self.jda, self.maga, '.', c='black')
         self.ax1.set_ylim(max(self.maga+0.01), min(self.maga)-0.01)
         self.ax1.set_xlim(min(self.jda)-10, max(self.jda)+0.01)
         self.ax1.set_xlabel(r'Time', fontsize=20)
         self.ax1.set_ylabel(r"Magnitud", fontsize=20)
+
         if self.name_star!=True:
-            self.ax1.text(0.03, 0.142, "%s"%self.name_star, ha='left', va='top', \
+            self.ax1.text(0.03, 0.145, "%s"%self.name_star, ha='left', va='top', \
                           transform=self.ax1.transAxes, fontsize=25,color="red")
 
 
 
 
+	
+        #LS astropy
+        frequency2, power3 = LombScargle(self.jda, self.maga, self.erra).autopower\
+            (minimum_frequency=1 / self.max_per,maximum_frequency=1 / self.min_per)
+        self.ax2.plot(1.0 / frequency2, power3, '-', c='cyan', lw=1, zorder=1, \
+                      label="PyLS")
 
-
+        if self.auto_per == True:
+            self.step_per = len(frequency2)
+        """
         #GLS
         self.periodos=np.linspace(self.min_per, self.max_per, self.step_per)
         self.omega = 2 * np.pi / self.periodos
@@ -152,21 +172,28 @@ class GuiExample(object):
         self.freqs = fmin + df * np.arange(self.step_per)
         self.ax2.plot(1.0/self.freqs, self.power, '-', c='red', lw=1, zorder=1,label="LS")
         self.ax2.legend(fontsize = 'x-large')
+        """
+
 
         #PDM
 
+        os.system("awk '{print $1,$2,$3}' %s  > borrar.dat"%tabla)
+        self.tabla="borrar.dat"
+	longi=open(self.tabla, 'r').read().count("\n")
+        pdm1=float(os.popen("./pdmmm %s %0.1f %0.3f %0.3f 10 5 %0.3f"%(self.tabla,longi,self.min_per,self.max_per,self.step_pdm)).readlines()[0])
+	f_11=np.genfromtxt(self.tabla+".pdm")
+        Pdm1t,Ppdm1=f_11[:,0],1./f_11[:,1]
+#        print len(f_11[0]),1./min(f_11[1])
+	self.ax2.plot(Ppdm1, Pdm1t, '-', c='green', lw=1, zorder=1,label="PDM",alpha=0.8)
 
 
-
+	###
+        self.ax2.legend(fontsize = 'x-large')
         self.ax2.set_xlabel(r'Periodo', fontsize=20)
         self.ax2.set_ylabel(r"Power", fontsize=20)
-
-        #self.ax2.set_ylim(0,1.01)
         self.ax2.set_xlim(self.min_per, self.max_per)
-
         self.ax1_bb = self.ax2.get_position()
-
-        self.fig.canvas.mpl_connect('motion_notify_event', self.on_mouse_over)
+	self.fig.canvas.mpl_connect('motion_notify_event', self.on_mouse_over)
         plt.tight_layout()
         plt.show()
 
@@ -180,6 +207,7 @@ class GuiExample(object):
                 try:
                     self.line_plot.remove()
                     self.ax3.relim()
+                    
                 except:
                     pass
             if event.ydata is not None:
@@ -187,7 +215,8 @@ class GuiExample(object):
                 print event.xdata
                 self.t0=0
                 fasA,magniA,t_A,er_A=calculo_fase(self.maga, self.jda, self.erra, self.per, self.t0)
-                self.line_plot, = self.ax3.plot(fasA,magniA,"o",color='k')
+		
+                self.line_plot, = self.ax3.plot(fasA,magniA,".",color='grey',alpha=0.2198)
                 self.ax3.set_xlim(0,2)
                 self.ax3.set_ylim(max(magniA+0.01), min(magniA)-0.01)
                 self.fig.canvas.draw()
