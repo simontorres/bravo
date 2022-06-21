@@ -1,7 +1,7 @@
 ccdproc==1.2.0
 scipy==0.17.1
 matplotlib==1.5.3
-numpy==1.11.1
+numpy==1.22.0
 asciitable==0.8.0
 astroML==0.3
 astroML_addons
