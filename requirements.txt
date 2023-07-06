@@ -1,5 +1,5 @@
 ccdproc==1.2.0
-scipy==0.17.1
+scipy==1.10.0
 matplotlib==1.5.3
 numpy==1.11.1
 asciitable==0.8.0
